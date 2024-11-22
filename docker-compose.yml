@@ -1,0 +1,40 @@
+services:
+  app:
+    build:
+      context: .
+    volumes:
+      - ./index.php:/var/www/html/index.php
+    environment:
+      DB_SERVER: db
+      DB_USERNAME: root
+      DB_PASSWORD: Senha123
+      DB_DATABASE: meubanco
+    depends_on:
+      - db
+    # O app não precisa expor portas para o host
+    expose:
+      - "80"  # Apenas para comunicação interna
+
+  nginx:
+    image: nginx
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - "4500:80"  # NGINX expõe a porta 4500 para o host
+    depends_on:
+      - app
+
+  db:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: Senha123
+      MYSQL_DATABASE: meubanco
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./banco.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  db_data:
